@@ -53,8 +53,8 @@ if __name__ == '__main__':
 
     control, decoy = read_data('fdr.txt')
 
-    np.sort(control)
-    np.sort(decoy)
+    control.sort()
+    decoy.sort()
 
     def f(t):
         n_c = np.searchsorted(control, t)
