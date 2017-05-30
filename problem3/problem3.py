@@ -1,4 +1,5 @@
 """
+Задача 3
 
    Решаем задачу в математической постановке, численными методами.
 
@@ -69,4 +70,4 @@ if __name__ == '__main__':
 
     answer = scipy.optimize.bisect(lambda t: f(t) - GOAL, *interval)
 
-    print(answer)  # The answer is 11.8775
+    print(answer)  # The answer is 11.8776
