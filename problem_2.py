@@ -26,48 +26,48 @@
    Следовательно, в контексте больших данных эта задача
    целиком сводится к проблеме сортировки массива
    (миллионы элементов).
+
+5. Распределённых платформ и явного распараллеливания сортировки
+   можно избежать, загрузив данные в SQLite БД в локальный файл.
+   Тогда с сортировкой целиком справится sqlite3-процесс, независимо
+   от размера ОЗУ.
+
 """
 
 from itertools import groupby, chain
 
-species = [
-    "Streptococcus mitis",
-    "Neisseria macaccae",
-    "Streptococcus mitis",
-    "Neisseria macaccae",
-    "Streptococcus mitis",
-    "Streptococcus mitis",
-    "Neisseria macaccae",
-]
 
-feature = [
-    "feature54",
-    "feature14",
-    "feature8",
-    "feature17",
-    "feature42",
-    "feature12",
-    "feature92",
-]
+def parse(line):
+    parts = line.split('feature')
+    subparts = parts[1].split()
 
-value = [
-    35.3,
-    98.3,
-    71.2,
-    30.1,
-    99.5,
-    24.2,
-    53.2,
-]
+    species = parts[0].strip()
+    feature = 'feature' + subparts[0]
+    value = float(subparts[1])
+
+    return species, feature, value
+
+
+def read_data(filename):
+    with open(filename) as source:
+        next(source)  # Skipping the header row.
+        return [parse(line) for line in source]
+
+
+def write_data(filename, data):
+    with open(filename, 'wt') as destination:
+        for item in data:
+            line = ', '.join(str(x) for x in chain([item[0]], item[1]))
+            destination.write(line + '\n')
 
 
 if __name__ == '__main__':
 
-    data = sorted(zip(species, feature, value), key=lambda x: (x[0], x[2]))
+    data = read_data('spec_dt.txt')
 
+    data.sort(key=lambda x: (x[0], x[2]))
     data = list(chain.from_iterable(
         enumerate(g, start=1) for k, g in groupby(data, key=lambda x: x[0])
     ))
 
-    for line in data:
-        print(line)
+    write_data('solution.txt', data)
