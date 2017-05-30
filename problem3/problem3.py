@@ -3,7 +3,9 @@
    Решаем задачу в математической постановке, численными методами.
 
    Строим функцию `f`, которая для произвольного T
-   считает интересующий нас процент (величину FDR).
+   считает интересующий нас процент (величину FDR). Вычисляется
+   как отношение числа элементов массива decoy, превышающих T,
+   к числу элементов массива control, превышающих T.
 
    Для этого нам нужна вспомогательная функция для вычисления
    количества элементов, превышающих T, в массивах control и decoy.
@@ -15,8 +17,8 @@
        - numpy.searchsorted
 
    Бинарный поиск даст индекс элемента в массиве, который находится
-   ближе всего к T. Этот индекс и есть искомое количество
-   (потому что массив отсортирован).
+   ближе всего к T. Разница длины массива и этого индекса и есть
+   искомое количество (потому что массив отсортирован).
 
    Теперь необходимо найти корень нелинейного одномерного уравнения
    `f(T) == 0.05`. Этого добиваемся классическим методом бисекции
@@ -31,8 +33,6 @@ import numpy as np
 import scipy.optimize
 
 
-# Отрезок для метода бисекции для поиска корня уравнения.
-SPAN = (0.1, 2.5)
 GOAL = 0.05
 
 
@@ -51,16 +51,22 @@ def read_data(filename):
 
 if __name__ == '__main__':
 
-    control, decoy = read_data('fdr.txt')
+    # control and decoy.
+    c, d = read_data('fdr.txt')
 
-    control.sort()
-    decoy.sort()
+    c.sort()
+    d.sort()
 
     def f(t):
-        n_c = np.searchsorted(control, t)
-        n_d = np.searchsorted(decoy, t)
-        return (n_c - n_d) / float(n_c) - GOAL
+        n_d = len(d) - np.searchsorted(d, t)
+        n_c = len(c) - np.searchsorted(c, t)
+        return n_d / n_c
 
-    answer = scipy.optimize.bisect(f, *SPAN)
+    # Choosing appropriate interval for bisection method.
+    minimums = d[0], c[0]
+    maximums = d[-1], c[-1]
+    interval = (min(minimums), min(maximums))
 
-    print(answer)
+    answer = scipy.optimize.bisect(lambda t: f(t) - GOAL, *interval)
+
+    print(answer)  # The answer is 11.8775
